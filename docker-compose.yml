@@ -40,9 +40,11 @@ services:
         condition: service_healthy # Espera a que MySQL pase el healthcheck
     environment:
       # Estos valores pisan a los de tu application.properties en Docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/circuito_manejo?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=123456
+      - DB_HOST=mysql_db
+      - DB_PORT=3306
+      - DB_NAME=circuito_manejo
+      - DB_USER=root
+      - DB_PASSWORD=123456
         # OPTIMIZACIÓN: Le dice a Java que use máximo 512MB para el Heap para que quepan los 700MB totales
       - JAVA_OPTS=-Xmx512m -Xms256m
       - EMAIL_SENDER=italocarlos931@gmail.com
