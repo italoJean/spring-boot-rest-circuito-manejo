@@ -1,0 +1,24 @@
+# Ignorar carpetas de compilación locales
+target/
+build/
+
+# Ignorar configuración de IntelliJ/Eclipse
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Ignorar control de versiones
+.git
+.gitignore
+
+# --- ARCHIVOS DE DOCKER ---
+# No es necesario que el Dockerfile se copie a sí mismo dentro de la imagen.
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignorar logs y archivos temporales
+*.log
+.DS_Store

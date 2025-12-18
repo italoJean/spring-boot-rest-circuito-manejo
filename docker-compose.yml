@@ -1,0 +1,56 @@
+services:
+  # Servidor de Base de Datos
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_circuito
+    restart: always
+    # Red privada para que los servicios se hablen entre sí
+    networks:
+      - circuito-network
+    environment:
+      - MYSQL_DATABASE=circuito_manejo
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - "33066:3306" # Tu PC entra por el 33065, pero Docker usa el 3306 internamente
+      # PERSISTENCIA: Los datos no se borran aunque el contenedor se destruya
+    volumes:
+      - mysql_circuito_data:/var/lib/mysql
+    healthcheck:
+      # Este comando verifica que MySQL esté realmente listo antes de subir la App
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Tu aplicación Spring Boot
+  app-supermercado:
+    build: . # Busca el Dockerfile en la misma carpeta
+    container_name: app_circuito_manejo
+    networks:
+      - circuito-network
+    ports:
+      - "8080:8080"
+    # LÍMITES: Evita que la app consuma toda la RAM de tu PC
+    deploy:
+      resources:
+        limits:
+          memory: 700M
+    depends_on:
+      mysql_db:
+        condition: service_healthy # Espera a que MySQL pase el healthcheck
+    environment:
+      # Estos valores pisan a los de tu application.properties en Docker
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/circuito_manejo?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+        # OPTIMIZACIÓN: Le dice a Java que use máximo 512MB para el Heap para que quepan los 700MB totales
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      - EMAIL_SENDER=italocarlos931@gmail.com
+      - EMAIL_PASSWORD=fyqibualdngwefyr
+# --- DEFINICIÓN DE REDES Y VOLÚMENES ---
+networks:
+  circuito-network:
+    driver: bridge
+
+volumes:
+  mysql_circuito_data: # Este volumen se guarda en el disco duro de tu máquina
