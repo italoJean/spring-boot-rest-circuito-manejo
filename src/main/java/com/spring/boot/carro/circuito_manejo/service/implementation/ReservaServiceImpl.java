@@ -304,7 +304,9 @@ public class ReservaServiceImpl implements ReservaService {
         reserva.setActivo(false);
         reservaRepository.save(reserva);
 
-        liberarVehiculo(reserva.getVehiculo());
+        // 4. LIBERACIÓN INTELIGENTE DEL VEHÍCULO
+        // Pasamos el ID de la reserva actual para que la consulta la ignore
+        gestionarLiberacionVehiculo(reserva.getVehiculo(), reserva.getId());
 
         log.info("Incidencia registrada reservaId={} usados={} devueltos={}", reservaId, minutosUsados, devueltos);
         return reservaMapper.toResponse(reserva);
@@ -417,6 +419,24 @@ public class ReservaServiceImpl implements ReservaService {
         reservaJobSchedulerService.programarJobsReserva(reserva);
 
         // 7. ACTUALIZAR ESTADO DEL VEHÍCULO
+        if (!esMismoVehiculo) {
+            // ESCENARIO A: Cambió de vehículo.
+            // El anterior debe liberarse inteligentemente (ver si alguien más lo usa).
+            gestionarLiberacionVehiculo(vehiculoAnterior, reserva.getId());
+
+            // El nuevo debe quedar marcado como RESERVADO.
+            vehiculoNuevo.setEstado(EstadoVehiculosEnum.RESERVADO);
+            vehiculoRepository.save(vehiculoNuevo);
+        } else {
+            // ESCENARIO B: Sigue con el mismo vehículo.
+            // Solo nos aseguramos que esté en estado RESERVADO (por si acaso).
+            if (vehiculoNuevo.getEstado() == EstadoVehiculosEnum.DISPONIBLE) {
+                vehiculoNuevo.setEstado(EstadoVehiculosEnum.RESERVADO);
+                vehiculoRepository.save(vehiculoNuevo);
+            }
+        }
+
+        /*
         if (!vehiculoAntesId.equals(dto.getVehiculoId())) {
             // Si el vehículo cambió, liberar el anterior y reservar el nuevo
             liberarVehiculoPorId(vehiculoAntesId);
@@ -425,7 +445,7 @@ public class ReservaServiceImpl implements ReservaService {
             // Si el vehículo NO cambió, solo aseguramos que el estado sigue siendo RESERVADO
 //            vehiculoRepository.actualizarEstadoVehiculo(vehiculoNuevo.getId(), EstadoVehiculosEnum.RESERVADO); OJOOO
             // Si el vehículo NO cambió, NO hacemos nada (ya está reservado y evita una query/update innecesario).
-        }
+        }*/
 
         // 8. REGISTRAR EVENTO
         Integer minutosUsadosEvento = 0;
@@ -513,7 +533,9 @@ public class ReservaServiceImpl implements ReservaService {
         eventoReservaRepository.save(eventoCancelacion);
 
         // 3. LIBERAR VEHÍCULO
-        liberarVehiculo(reserva.getVehiculo());
+//        liberarVehiculo(reserva.getVehiculo());
+        gestionarLiberacionVehiculo(reserva.getVehiculo(), reserva.getId());
+
         log.info("Reserva cancelada id={} devolución={}", reservaId, reserva.getMinutosReservados());
     }
 
@@ -657,6 +679,25 @@ public class ReservaServiceImpl implements ReservaService {
         vehiculoRepository.actualizarEstadoVehiculo(vehiculoId, EstadoVehiculosEnum.DISPONIBLE);
     }
 
+    /**
+     * Verifica si existen otras reservas para decidir el estado final del vehículo.
+     */
+    private void gestionarLiberacionVehiculo(Vehiculo vehiculo, Long reservaActualId) {
+        // Usamos el método que creamos anteriormente en el repositorio
+        boolean tieneMasReservas = reservaRepository.existsOtrasReservasActivas(vehiculo.getId(), reservaActualId);
+
+        if (tieneMasReservas) {
+            // Si hay alguien más esperando (RESERVADO) o usando (EN_PROGRESO)
+            vehiculo.setEstado(EstadoVehiculosEnum.RESERVADO);
+            log.info("Vehículo ID: {} permanece RESERVADO por otras reservas pendientes.", vehiculo.getId());
+        } else {
+            // Si no hay nadie más, queda libre
+            vehiculo.setEstado(EstadoVehiculosEnum.DISPONIBLE);
+            log.info("Vehículo ID: {} ahora está DISPONIBLE.", vehiculo.getId());
+        }
+
+        vehiculoRepository.save(vehiculo);
+    }
 
     /**
      * Valida la duración máxima y límites de anticipación para la creación de una reserva.

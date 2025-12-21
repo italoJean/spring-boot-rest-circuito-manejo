@@ -62,4 +62,9 @@ public class PaqueteServiceImpl implements PaqueteService {
         paqueteRepository.save(entity);
     }
 
+    @Override
+    public boolean tienePagosAsociados(Long id) {
+        return paqueteRepository.existsByPaqueteIdInPagos(id);
+    }
+
 }

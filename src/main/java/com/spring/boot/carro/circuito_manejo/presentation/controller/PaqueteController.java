@@ -57,4 +57,11 @@ public class PaqueteController {
                 .toUri(); */
         return ResponseEntity.created(location).body(creado);
     }
+
+
+    @GetMapping("/{id}/tiene-pagos")
+    public ResponseEntity<Boolean> verificarPagos(@PathVariable Long id) {
+        boolean tienePagos = paqueteService.tienePagosAsociados(id);
+        return ResponseEntity.ok(tienePagos);
+    }
 }

@@ -102,4 +102,11 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 @Query("SELECT r.id AS idReserva, r.fechaReserva AS inicio, r.fechaFin AS fin, r.vehiculo.id AS idVehiculo, r.pago.id AS idPago, r.estado AS estado, r.pago.usuario.nombre AS nombre, r.pago.usuario.apellido AS apellido, r.vehiculo.placa AS placaVehiculo, r.minutosReservados AS minutosReservados FROM Reserva r WHERE r.pago.id = :pagoId AND r.activo = true AND r.estado IN ('RESERVADO','EN_PROGRESO')")
 List<HorarioOcupadoProjection> findHorariosOcupadosPorCliente(Long pagoId);
 
+
+    @Query("SELECT COUNT(r) > 0 FROM Reserva r " +
+            "WHERE r.vehiculo.id = :vehiculoId " +
+            "AND r.id <> :reservaActualId " +
+            "AND r.activo = true " +
+            "AND r.estado IN ('RESERVADO', 'EN_PROGRESO')")
+    boolean existsOtrasReservasActivas(@Param("vehiculoId") Long vehiculoId, @Param("reservaActualId") Long reservaActualId);
 }

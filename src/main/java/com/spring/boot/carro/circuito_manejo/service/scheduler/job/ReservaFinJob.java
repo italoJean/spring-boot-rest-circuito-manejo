@@ -71,10 +71,21 @@ public class ReservaFinJob implements Job {
 
         eventoReservaRepository.save(evento);
 
-        // 7. LIBERACIÓN DE RECURSOS (VEHÍCULO)
-        // Actualiza el estado del vehículo asociado para que vuelva a estar disponible.
+        // 7. LIBERACIÓN CONDICIONAL DE RECURSOS (VEHÍCULO)
         Vehiculo vehiculo = reserva.getVehiculo();
-        vehiculo.setEstado(EstadoVehiculosEnum.DISPONIBLE);
+
+        // Comprobar si hay otras reservas que requieran el vehículo
+        boolean tieneMasReservas = reservaRepository.existsOtrasReservasActivas(vehiculo.getId(), reservaId);
+
+        if (tieneMasReservas) {
+            // Si hay más reservas, el vehículo NO se pone disponible, se mantiene RESERVADO u OCUPADO
+            vehiculo.setEstado(EstadoVehiculosEnum.RESERVADO);
+            log.info("ℹ️ Vehículo ID: {} continúa RESERVADO debido a otras reservas pendientes.", vehiculo.getId());
+        } else {
+            // Si no hay más, queda LIBRE
+            vehiculo.setEstado(EstadoVehiculosEnum.DISPONIBLE);
+            log.info("✅ Vehículo ID: {} ahora está DISPONIBLE.", vehiculo.getId());
+        }
         vehiculoRepository.save(vehiculo);
 
         // 8. GUARDAR CAMBIOS FINALES DE RESERVA

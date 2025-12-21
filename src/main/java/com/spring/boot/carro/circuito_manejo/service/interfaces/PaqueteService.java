@@ -16,4 +16,5 @@ public interface PaqueteService {
 
     public void eliminar(Long id);
 
+    public boolean tienePagosAsociados(Long id) ;
 }
