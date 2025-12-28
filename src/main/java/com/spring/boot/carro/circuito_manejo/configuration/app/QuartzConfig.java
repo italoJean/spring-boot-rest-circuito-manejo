@@ -14,31 +14,6 @@ import javax.sql.DataSource;
 
 @Configuration
 public class QuartzConfig {
-/*
-    private final DataSource dataSource;
-
-    // Spring inyectará automáticamente el DataSource principal de tu BD MySQL
-    public QuartzConfig(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    @Bean
-    public SchedulerFactoryBean schedulerFactoryBean() {
-        SchedulerFactoryBean factory = new SchedulerFactoryBean();
-
-        factory.setDataSource(dataSource);
-
-        // Otras configuraciones que ya tengas
-        factory.setSchedulerName("ReservaScheduler");
-        factory.setOverwriteExistingJobs(true);
-        factory.setAutoStartup(true);
-
-        return factory;
-    }
-}
-*/
-
-    //VERSION EDIT PRUEBA
     private final DataSource dataSource;
     private final ApplicationContext applicationContext;
 

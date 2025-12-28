@@ -40,7 +40,8 @@ public class SecurityConfig {
                 //.formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
                         // Aquí podrías redirigir a una URL de Angular después del éxito
-                        .defaultSuccessUrl("http://localhost:4200/dashboard", true)
+                      //  .defaultSuccessUrl("http://localhost:4200/dashboard", true)
+                        .defaultSuccessUrl("https://spring-boot-rest-circuito-manejo-production.up.railway.app/dashboard", true)
                 )
 
                 .logout(logout -> logout
@@ -61,7 +62,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Agrega tanto localhost como tu URL de Render
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://tu-app-angular.onrender.com"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200", "https://spring-boot-rest-circuito-manejo-production.up.railway.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true); // Muy importante para OAuth2 y sesiones
