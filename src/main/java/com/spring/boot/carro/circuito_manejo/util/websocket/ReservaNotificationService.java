@@ -1,7 +1,7 @@
 package com.spring.boot.carro.circuito_manejo.util.websocket;
 
 import com.spring.boot.carro.circuito_manejo.persistence.entity.Reserva;
-import com.spring.boot.carro.circuito_manejo.presentation.dto.ReservaNotificationDTO;
+import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.evento.ReservaNotificationDTO;
 import com.spring.boot.carro.circuito_manejo.service.interfaces.IEmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,80 +16,53 @@ public class ReservaNotificationService {
     private final SimpMessagingTemplate messagingTemplate;
     private final IEmailService emailService;
 
-    public void notificarReservaProxima(Reserva reserva) {
+    // --- EL MÉTODO QUE FALTA: Notificación 1 hora antes (Solo Email al Cliente) ---
+    public void notificarPorCorreo(String emailDestino, Reserva reserva) {
+        String asunto = "📅 Recordatorio: Tu reserva inicia en 1 hora";
 
+        String cuerpo = String.format(
+                """
+                        Hola %s %s,
+
+                        Te recordamos que tu reserva está programada para hoy a las %s.
+                        🚗 Vehículo: %s %s
+                        ⏱️ Duración: %d minutos.
+
+                        ¡Te esperamos!
+
+                        Saludos,
+                        Sistema de Reservas""",
+                reserva.getPago().getUsuario().getNombre(),              // %s (Hola...)
+                reserva.getPago().getUsuario().getApellido(),
+                reserva.getFechaReserva().toLocalTime().toString(),      // %s (Hora)
+                reserva.getVehiculo().getMarca(),                        // %s (Marca)
+                reserva.getVehiculo().getModelo(),                       // %s (Modelo)
+                reserva.getMinutosReservados()                           // %d (Minutos)
+        );
+
+        emailService.sendEmail(new String[]{emailDestino}, asunto, cuerpo);
+        log.info("📧 Email de recordatorio (1h) enviado a: {}", emailDestino);
+    }
+
+    // --- Notificación 10 minutos antes (Gmail + WebSocket) ---
+    public void notificarUsuarioGmail(String emailGmail, Reserva reserva) {
+        // 1. Email a la cuenta de Gmail logueada
+        String asunto = "⏰ ¡Iniciamos en 10 minutos!";
+        String cuerpo = "El sistema te informa que la reserva #" + reserva.getId() + " comenzará muy pronto.";
+
+        emailService.sendEmail(new String[]{emailGmail}, asunto, cuerpo);
+
+        // 2. WebSocket para el Dashboard
         Long usuarioId = reserva.getPago().getUsuario().getId();
-        String emailUsuario = reserva.getPago().getUsuario().getEmail();
-
-        // 1️⃣ NOTIFICACIÓN WEBSOCKET (Dashboard interno)
         ReservaNotificationDTO dto = new ReservaNotificationDTO(
                 reserva.getId(),
-                "⏰ Tu reserva inicia en 10 minutos",
+                " Tu reserva inicia en 10 min",
                 reserva.getFechaReserva()
         );
 
-        messagingTemplate.convertAndSend(
-                "/topic/reservas/" + usuarioId,
-                dto
-        );
-
-        log.info("🔔 WebSocket enviado | Reserva={} Usuario={}", reserva.getId(), usuarioId);
-
-        // 2️⃣ NOTIFICACIÓN POR CORREO
-        enviarCorreoReservaProxima(reserva, emailUsuario);
+        messagingTemplate.convertAndSend("/topic/reservas/" + emailGmail, dto);
+        log.info("🔔 Alerta 10min enviada por Email a {} y WebSocket a usuario {}", emailGmail, usuarioId);
     }
-
-    private void enviarCorreoReservaProxima(Reserva reserva, String emailUsuario) {
-
-        String asunto = "⏰ Tu reserva inicia en 10 minutos";
-
-        String cuerpo = """
-                Hola %s,
-
-                Te recordamos que tu reserva iniciará en 10 minutos.
-
-                📅 Fecha y hora: %s
-                🚗 Vehículo: %s %s
-                ⏱️ Duración: %d minutos
-
-                Por favor llega puntual.
-
-                Saludos,
-                Sistema de Reservas
-                """.formatted(
-                reserva.getPago().getUsuario().getNombre(),
-                reserva.getFechaReserva(),
-                reserva.getVehiculo().getMarca(),
-                reserva.getVehiculo().getModelo(),
-                reserva.getMinutosReservados()
-        );
-
-        emailService.sendEmail(
-                new String[]{emailUsuario},
-                asunto,
-                cuerpo
-        );
-
-        log.info("📧 Email enviado | Reserva={} Email={}", reserva.getId(), emailUsuario);
-    }
-/*
-    public void notificarReservaProxima(Reserva reserva) {
-
-        ReservaNotificationDTO dto = new ReservaNotificationDTO(
-                reserva.getId(),
-                "⏰ Tu reserva inicia en 10 minutos",
-                reserva.getFechaReserva()
-        );
-
-        messagingTemplate.convertAndSend(
-                "/topic/reservas/" + reserva.getPago().getUsuario().getId(),
-                dto
-        );
-        log.info("🔔 Notificación enviada para Reserva ID: {} al usuario ID: {}",
-                reserva.getId(),
-                reserva.getPago().getUsuario().getId(),
-                reserva.getFechaReserva()
-        );
-
-    }*/
 }
+
+

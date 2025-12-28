@@ -2,8 +2,6 @@ package com.spring.boot.carro.circuito_manejo.presentation.dto.reserva;
 
 import com.spring.boot.carro.circuito_manejo.persistence.enums.EstadoReservaEnum;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.PagoResumenDTO;
-import com.spring.boot.carro.circuito_manejo.presentation.dto.paquete.PaqueteResumenDTO;
-import com.spring.boot.carro.circuito_manejo.presentation.dto.usuario.UsuarioResumenDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoResumenDTO;
 import lombok.Getter;
 import lombok.Setter;

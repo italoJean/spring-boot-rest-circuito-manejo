@@ -6,7 +6,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.PagoContadoRe
 import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.PagoCuotasRequestDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.detalle.PagarCuotaRequest;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.detalle.PagoDetalleResponseDTO;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.PagoService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IPagoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +16,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-@CrossOrigin(origins = "*")
+
 @RestController
 @RequestMapping("/api/v1/pagos")
 public class PagoController {
 
     @Autowired
-    private PagoService pagoService;
+    private IPagoService pagoService;
 
     @PostMapping("/contado")
     public ResponseEntity<PagoListadoResponseDTO> createContado(@RequestBody @Valid PagoContadoRequestDTO pagoRequestDTO, UriComponentsBuilder uriComponentsBuilder) {

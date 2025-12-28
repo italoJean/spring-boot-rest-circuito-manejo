@@ -12,11 +12,14 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.ReservaMin
 import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.*;
 import com.spring.boot.carro.circuito_manejo.service.exception.BusinessException;
 import com.spring.boot.carro.circuito_manejo.service.exception.NotFoundException;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.ReservaService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IReservaService;
 import com.spring.boot.carro.circuito_manejo.service.scheduler.ReservaJobSchedulerService;
 import com.spring.boot.carro.circuito_manejo.util.mapper.ReservaMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +32,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ReservaServiceImpl implements ReservaService {
+public class ReservaService implements IReservaService {
 
     private final ReservaRepository reservaRepository;
     private final PagoRepository pagoRepository;
@@ -43,14 +46,14 @@ public class ReservaServiceImpl implements ReservaService {
     private final String RESERVA = "reserva";
 
     //  CONSTANTES DE NEGOCIO
-    private final int MAX_RESERVAS_SIMULTANEAS = 4;//eran 8
+    private final int MAX_RESERVAS_SIMULTANEAS = 8;
     private final int MAX_REPROGRAMACIONES_PERMITIDAS = 2;
     private final int TOLERANCIA_MINUTOS = 1;
 
     private final int MIN_RESERVA_MINUTOS = 60;        // mínimo 1 hora
     private final int MAX_RESERVA_MINUTOS = 300;    // máximo 5 horas
     private final int MIN_ANTICIPACION_MINUTOS = 1;//eran 5
-    private final int MAX_ANTICIPACION_DIAS = 30;
+    private final int MAX_ANTICIPACION_DIAS = 20;
 
     /**
      * Reglas de negocio:
@@ -172,11 +175,26 @@ public class ReservaServiceImpl implements ReservaService {
         reserva.setFechaFin(fin);
         reserva.setActivo(true);
 
-        reserva = reservaRepository.save(reserva);
+//        reserva = reservaRepository.save(reserva);
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! se añadio
+        // 1. Obtener el email de la persona logueada con Gmail (OAuth2)
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String emailGmail = "";
+        if (auth.getPrincipal() instanceof OAuth2User oAuth2User) {
+            emailGmail = oAuth2User.getAttribute("email"); // Este es el campo real de Gmail
+        } else {
+            emailGmail = auth.getName(); // Fallback para login tradicional
+        }
+
+        System.out.println(emailGmail);
+
+        reserva.setEmailCreador(emailGmail); // Guardamos quién la creó físicamente
+        reserva = reservaRepository.save(reserva);
 // Programar eventos temporales
+//        reservaJobSchedulerService.programarJobsReserva(reserva,emailGmail);
         reservaJobSchedulerService.programarJobsReserva(reserva);
+
 
         // Registrar evento inicial
         EventoReserva eventoInicial = EventoReserva.builder()
@@ -233,6 +251,38 @@ public class ReservaServiceImpl implements ReservaService {
         List<HorarioOcupadoProjection> data=reservaRepository.findHorariosOcupadosPorCliente(clienteId);
         return  data.stream()
                 .map(c->new HorarioOcupadoDTO(c.getIdReserva(),c.getInicio(),c.getFin(),c.getIdPago(),c.getIdVehiculo(),c.getEstado(),c.getNombre(),c.getApellido(),c.getPlacaVehiculo(),c.getMinutosReservados())).toList();
+    }
+
+    @Override
+    public List<HorarioOcupadoDTO> obtenerHorarios(Long vehiculoId, Long pagoId) {
+        // 1. Validaciones de existencia (Fail Fast)
+        if (vehiculoId != null && !vehiculoRepository.existsById(vehiculoId)) {
+            throw new NotFoundException("Vehículo con ID " + vehiculoId + " no encontrado");
+        }
+
+        // Si usas PagoRepository para validar el pagoId
+        if (pagoId != null && !pagoRepository.existsById(pagoId)) {
+            throw new NotFoundException("Registro de pago/cliente con ID " + pagoId + " no encontrado");
+        }
+
+        // 2. Llamada al repositorio unificado con lógica OR
+        List<HorarioOcupadoProjection> data = reservaRepository.findHorariosOcupados(vehiculoId, pagoId);
+
+        // 3. Mapeo limpio a DTO usando Stream
+        return data.stream()
+                .map(h -> new HorarioOcupadoDTO(
+                        h.getIdReserva(),
+                        h.getInicio(),
+                        h.getFin(),
+                        h.getIdPago(),
+                        h.getIdVehiculo(),
+                        h.getEstado(),
+                        h.getNombre(),
+                        h.getApellido(),
+                        h.getPlacaVehiculo(),
+                        h.getMinutosReservados()
+                ))
+                .toList();
     }
 
 
@@ -303,6 +353,10 @@ public class ReservaServiceImpl implements ReservaService {
         reserva.setEstado(EstadoReservaEnum.INCIDENCIA);//aca lo cambio finalizado estaba
         reserva.setActivo(false);
         reservaRepository.save(reserva);
+
+        // NUEVO: Limpiar Quartz
+        // Esto evita que el Job de "Fin de Reserva" se dispare cuando llegue la hora original
+        reservaJobSchedulerService.eliminarJobsReserva(reservaId);
 
         // 4. LIBERACIÓN INTELIGENTE DEL VEHÍCULO
         // Pasamos el ID de la reserva actual para que la consulta la ignore
@@ -400,10 +454,6 @@ public class ReservaServiceImpl implements ReservaService {
         }
         // Nota: Si la duración se reduce, la devolución de saldo se maneja en el evento.
 
-
-        // 1️⃣ ELIMINAR JOBS ANTERIORES
-        reservaJobSchedulerService.eliminarJobsReserva(reserva.getId());
-
         // 6. ACTUALIZAR RESERVA
         LocalDateTime fechaAnterior = reserva.getFechaReserva();
         Long vehiculoAntesId = vehiculoAnterior.getId();
@@ -415,7 +465,7 @@ public class ReservaServiceImpl implements ReservaService {
 
         reservaRepository.save(reserva);
 
-        // 🔁 Reprogramar jobs Quartz
+        //  Reprogramar jobs Quartz
         reservaJobSchedulerService.programarJobsReserva(reserva);
 
         // 7. ACTUALIZAR ESTADO DEL VEHÍCULO
@@ -515,6 +565,9 @@ public class ReservaServiceImpl implements ReservaService {
         reserva.setEstado(EstadoReservaEnum.CANCELADO);
         reserva.setActivo(false);
         reservaRepository.save(reserva);
+
+        //  NUEVO: Eliminar todos los procesos automáticos de Quartz
+        reservaJobSchedulerService.eliminarJobsReserva(reservaId);
 
         // 2. REGISTRAR EVENTO DE DEVOLUCIÓN TOTAL
         int minutosADevolver = reserva.getMinutosReservados();

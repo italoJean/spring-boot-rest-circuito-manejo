@@ -6,7 +6,7 @@ import com.spring.boot.carro.circuito_manejo.persistence.repository.VehiculoRepo
 import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoDTO;
 import com.spring.boot.carro.circuito_manejo.service.exception.BusinessException;
 import com.spring.boot.carro.circuito_manejo.service.exception.NotFoundException;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.VehiculoService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IVehiculoService;
 import com.spring.boot.carro.circuito_manejo.util.mapper.VehiculoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class VehiculoServiceImpl implements VehiculoService {
+public class VehiculoService implements IVehiculoService {
 
     @Autowired
     private VehiculoRepository vehiculoRepository;
@@ -40,7 +40,6 @@ public class VehiculoServiceImpl implements VehiculoService {
                 .map(vehiculoMapper::toResponse)
                 .toList();
     }
-
 
     @Transactional(readOnly = true)
     @Override

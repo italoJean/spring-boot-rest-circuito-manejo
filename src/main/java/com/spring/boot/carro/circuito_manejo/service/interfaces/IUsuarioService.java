@@ -5,8 +5,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.usuario.UsuarioRes
 
 import java.util.List;
 
-public interface UsuarioService {
-
+public interface IUsuarioService {
 
     public List<UsuarioResponseDTO> listar();
 

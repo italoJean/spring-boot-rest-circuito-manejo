@@ -1,10 +1,9 @@
 package com.spring.boot.carro.circuito_manejo.presentation.controller;
 
-import com.spring.boot.carro.circuito_manejo.persistence.projection.HorarioOcupadoProjection;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.evento.HorarioOcupadoDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoDTO;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.ReservaService;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.VehiculoService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IReservaService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IVehiculoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +13,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-@CrossOrigin(origins = "*")
+
 @RestController
 @RequestMapping("/api/v1/vehiculos")
 public class VehiculoController {
 
     @Autowired
-    private VehiculoService vehiculoService;
+    private IVehiculoService vehiculoService;
 
     @Autowired
-    private ReservaService reservaService;
+    private IReservaService reservaService;
 
     @GetMapping
     public ResponseEntity<List<VehiculoDTO>> findAll() {

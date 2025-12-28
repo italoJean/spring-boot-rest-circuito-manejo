@@ -1,7 +1,7 @@
 package com.spring.boot.carro.circuito_manejo.presentation.controller;
 
 import com.spring.boot.carro.circuito_manejo.presentation.dto.paquete.PaqueteDTO;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.PaqueteService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IPaqueteService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,13 +11,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/v1/paquetes")
 public class PaqueteController {
 
     @Autowired
-    private PaqueteService paqueteService;
+    private IPaqueteService paqueteService;
 
 
     @GetMapping

@@ -9,8 +9,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.*;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.detalle.PagoDetalleResponseDTO;
 import com.spring.boot.carro.circuito_manejo.service.exception.BusinessException;
 import com.spring.boot.carro.circuito_manejo.service.exception.NotFoundException;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.PagoService;
-import com.spring.boot.carro.circuito_manejo.util.mapper.DetallePagoMapper;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IPagoService;
 import com.spring.boot.carro.circuito_manejo.util.mapper.PagoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class PagoServiceImpl implements PagoService {
+public class PagoService implements IPagoService {
 
     private final String NOT_FOUND_MSG = "Pago no encontrado con el id: ";
 
@@ -40,13 +39,6 @@ public class PagoServiceImpl implements PagoService {
 
     @Autowired
     private PagoMapper pagoMapper;
-
-    @Autowired
-    private DetallePagoRepository detallePagoRepository;
-
-    @Autowired
-    private DetallePagoMapper detallePagoMapper;
-
 
     @Transactional(readOnly = true)
     @Override

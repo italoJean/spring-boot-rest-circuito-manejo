@@ -39,11 +39,11 @@ public class Pago {
     @Column(nullable = false, name = "numero_boleta")
     private String numeroBoleta;
 
-    @Column(nullable = false)
+    @Column(nullable = false,precision = 10, scale = 2)
     private BigDecimal monto;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 15,nullable = false,name = "metodo_pago",precision = 10, scale = 2)
+    @Column(length = 15,nullable = false,name = "metodo_pago")
     private MetodoPagoEnum metodoPago;
 
     @Enumerated(EnumType.STRING)

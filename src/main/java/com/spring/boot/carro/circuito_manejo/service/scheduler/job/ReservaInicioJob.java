@@ -3,19 +3,21 @@ package com.spring.boot.carro.circuito_manejo.service.scheduler.job;
 import com.spring.boot.carro.circuito_manejo.persistence.entity.Reserva;
 import com.spring.boot.carro.circuito_manejo.persistence.enums.EstadoReservaEnum;
 import com.spring.boot.carro.circuito_manejo.persistence.repository.ReservaRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component // Marca la clase como un componente de Spring, permitiendo la inyección de dependencias.
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Slf4j
 public class ReservaInicioJob implements Job {
 
-    private final ReservaRepository reservaRepository;
+    @Autowired
+    private  ReservaRepository reservaRepository;
 
     @Override
     @Transactional// Asegura que todas las operaciones de BD sean atómicas (o se ejecutan todas, o ninguna).

@@ -34,9 +34,6 @@ public interface ReservaMapper {
     @Mapping(target = "apellido", source = "pago.usuario.apellido")
     @Mapping(target = "placaVehiculo", source = "vehiculo.placa")
     @Mapping(target = "modeloVehiculo", source = "vehiculo.modelo")
-//    @Mapping(target = "nombre", source = "usuario.nombre")
-//    @Mapping(target = "nombre", source = "usuario.nombre")
-//    @Mapping(target = "estado", source = "estado")
     ReservaResponseDTO toResponse(Reserva reserva);
 
 
@@ -48,9 +45,6 @@ public interface ReservaMapper {
     @Mapping(target = "idVehiculo", source = "vehiculo.id")
     @Mapping(target = "idPago", source = "pago.id")
     @Mapping(target = "idReserva", source = "id")
-//    @Mapping(target = "nombre", source = "usuario.nombre")
-//    @Mapping(target = "nombre", source = "usuario.nombre")
-//    @Mapping(target = "estado", source = "estado")
     HorarioOcupadoDTO toResponseHorarioOcupadoDTO(Reserva reserva);
 
     List<ReservaResponseDTO> toResponseList(List<Reserva> reservas);

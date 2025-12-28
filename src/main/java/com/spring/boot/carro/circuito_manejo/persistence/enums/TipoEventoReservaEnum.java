@@ -5,6 +5,5 @@ public enum TipoEventoReservaEnum {
     INCIDENCIA,
     CANCELADO,
     FINALIZADO,
-    SALDO_LIQUIDADO,
     REPROGRAMADA
 }

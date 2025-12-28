@@ -4,33 +4,49 @@ import com.spring.boot.carro.circuito_manejo.persistence.entity.Reserva;
 import com.spring.boot.carro.circuito_manejo.service.scheduler.job.ReservaFinJob;
 import com.spring.boot.carro.circuito_manejo.service.scheduler.job.ReservaInicioJob;
 import com.spring.boot.carro.circuito_manejo.service.scheduler.job.ReservaNotificacionJob;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
-
-@Service
-@RequiredArgsConstructor
 @Slf4j
+@Service
 public class ReservaJobSchedulerService {
 
     //  Interfaz principal para programar, desprogramar y gestionar Jobs.
-    private final Scheduler scheduler;
+    @Autowired
+    private  Scheduler scheduler;
+
 
     public void programarJobsReserva(Reserva reserva) {
-    // Método de alto nivel que se llama desde el Servicio principal de su aplicación.
+        eliminarJobsReserva(reserva.getId()); // Siempre limpiar antes de programar
+
         programarInicio(reserva);
         programarFin(reserva);
-        programarNotificacion(reserva);
+        programarNotificacion(reserva, 60, "CLIENTE"); // Notificación 1h
+        programarNotificacion(reserva, 10, "GMAIL_USUARIO"); // Notificación 10m
     }
 
+    private void programarNotificacion(Reserva reserva, int minutos, String tipo) {
+        LocalDateTime tiempo = reserva.getFechaReserva().minusMinutes(minutos);
+        if (tiempo.isBefore(LocalDateTime.now())) return;
+
+        JobDetail job = JobBuilder.newJob(ReservaNotificacionJob.class)
+                .withIdentity("notif-" + tipo + "-" + reserva.getId())
+                .usingJobData("reservaId", reserva.getId()) // SOLO pasamos el ID
+                .usingJobData("tipoNotif", tipo)
+                .build();
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .startAt(Date.from(tiempo
+                        .atZone(ZoneId.systemDefault()).toInstant()))
+                .build();
+
+        schedule(job, trigger);
+    }
 
     public void eliminarJobsReserva(Long reservaId) {
         try {
@@ -43,11 +59,15 @@ public class ReservaJobSchedulerService {
             // **JobKey.jobKey()**: Crea un identificador único para el Job que se desea eliminar.
             // La clave debe coincidir exactamente con el 'identity' usado al programar el Job.
 
-            scheduler.deleteJob(JobKey.jobKey("notif-reserva-" + reservaId));
+//            scheduler.deleteJob(JobKey.jobKey("notif-reserva-" + reservaId)); esto ya no va y va lo debaajo?=
+            scheduler.deleteJob(JobKey.jobKey("notif-CLIENTE-" + reservaId));
+        scheduler.deleteJob(JobKey.jobKey("notif-GMAIL_USUARIO-" + reservaId));
+            log.info("🧹 BD Quartz limpia para reserva ID: {}", reservaId);
         } catch (SchedulerException e) {
             // 3. MANEJO DE ERRORES
             // Si hay un error de comunicación con el Scheduler (ej. fallo de la DB de Quartz),
             // se captura la excepción y se relanza como una RuntimeException (o se maneja el error de forma específica).
+            log.error("Error al eliminar jobs de la reserva {}", reservaId, e);
             throw new RuntimeException("Error eliminando jobs Quartz", e);
         }
     }
@@ -67,21 +87,7 @@ public class ReservaJobSchedulerService {
                         .atZone(ZoneId.systemDefault()).toInstant()))
                 .build();
 
-        /*
-        // 2. CREACIÓN DEL TRIGGER (ACTUALIZADO)
-        Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("inicio-reserva-trigger-" + reserva.getId()) // Buena práctica darle un nombre al Trigger
-                .startAt(Date.from(reserva.getFechaReserva()
-                        .atZone(ZoneId.systemDefault()).toInstant()))
-                // AÑADIDO: Configuración del horario simple
-                .withSchedule(simpleSchedule()
-                        .withRepeatCount(0) // Ejecutar solo una vez (fundamental)
-                        .withIntervalInSeconds(0) // Sin intervalo de repetición
-                        // CLAVE: Instrucción de Misfire: si la hora de inicio pasó, dispáralo inmediatamente.
-                        // Luego, se considera completado y Quartz lo borra (comportamiento correcto para un evento único).
-                        .withMisfireHandlingInstructionFireNow())
-                .forJob(job) // Se enlaza al Job creado arriba
-                .build();*/
+
 
         // 3. PROGRAMACIÓN
         schedule(job, trigger);
@@ -103,48 +109,11 @@ public class ReservaJobSchedulerService {
                         .atZone(ZoneId.systemDefault()).toInstant()))
                 .build();
 
-        /*
-        // 2. CREACIÓN DEL TRIGGER (ACTUALIZADO)
-        Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("fin-reserva-trigger-" + reserva.getId()) // Buena práctica darle un nombre al Trigger
-                .startAt(Date.from(reserva.getFechaFin()
-                        .atZone(ZoneId.systemDefault()).toInstant()))
-                // AÑADIDO: Configuración del horario simple
-                .withSchedule(simpleSchedule()
-                        .withRepeatCount(0) // Ejecutar solo una vez
-                        .withIntervalInSeconds(0)
-                        // CLAVE: Instrucción de Misfire (Disparar inmediatamente si está atrasado)
-                        .withMisfireHandlingInstructionFireNow())
-                .forJob(job)
-                .build();
-        */
 
         // 3. PROGRAMACIÓN
         schedule(job, trigger);
     }
 
-    private void programarNotificacion(Reserva reserva) {
-
-        LocalDateTime notificacionTime = reserva.getFechaReserva().minusMinutes(10);
-
-        // Evitar fechas pasadas
-        if (notificacionTime.isBefore(LocalDateTime.now())) {
-            log.info("⏱ No se programa notificación: faltan menos de 10 minutos para la reserva {}", reserva.getId());
-            return;
-        }
-
-        JobDetail job = JobBuilder.newJob(ReservaNotificacionJob.class)
-                .withIdentity("notif-reserva-" + reserva.getId())
-                .usingJobData("reservaId", reserva.getId())
-                .build();
-
-        Trigger trigger = TriggerBuilder.newTrigger()
-                .startAt(Date.from(notificacionTime
-                        .atZone(ZoneId.systemDefault()).toInstant()))
-                .build();
-
-        schedule(job, trigger);
-    }
 
     private void schedule(JobDetail job, Trigger trigger) {
         try {

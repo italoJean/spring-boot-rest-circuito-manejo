@@ -6,7 +6,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.pago.detalle.PagoD
 
 import java.util.List;
 
-public interface PagoService {
+public interface IPagoService {
 
     public List<PagoListadoResponseDTO> listarPagos();
 
@@ -20,5 +20,4 @@ public interface PagoService {
 
     public void suspenderPago(Long id);
 
-//    public PagoMinutosDTO obtenerMinutosDisponibles(Long id);
 }

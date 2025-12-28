@@ -46,12 +46,12 @@ public class CircuitoManejoApplication {
 			// 1. **Definir la lista de datos específicos**
 			List<DatosUsuario> datosIniciales = List.of(
 					new DatosUsuario("Italo Jeampierre", "Carlos Roque", "italocarlosroque@gmail.com", "70757085", "970818053", TipoDocumentoEnum.DNI),
-					new DatosUsuario("Edgar Rise", "Carlos Vilca", "edgar1020@gmail.com", "1613207658", "994205861", TipoDocumentoEnum.PASAPORTE),
-					new DatosUsuario("Maria", "Perez Gomez", "mariapg@gmail.com", "45612378", "987654321", TipoDocumentoEnum.DNI),
-					new DatosUsuario("Juan", "Lopez Sanchez", "juansl@gmail.com", "987456321", "912345678", TipoDocumentoEnum.PASAPORTE),
-					new DatosUsuario("Pepito", "Tomas Feroloco", "peptio@mail.com", "987456300", "987654147", TipoDocumentoEnum.PASAPORTE),
+					new DatosUsuario("Edgar Rise", "Carlos Vilca", "italocarlos032@gmail.com", "1613207658", "994205861", TipoDocumentoEnum.PASAPORTE),
+					new DatosUsuario("Maria", "Perez Gomez", "italocarlos032@gmail.com", "45612378", "987654321", TipoDocumentoEnum.DNI),
+					new DatosUsuario("Juan", "Lopez Sanchez", "italocarlos032@gmail.com", "987456321", "912345678", TipoDocumentoEnum.PASAPORTE),
+					new DatosUsuario("Pepito", "Tomas Feroloco", "italocarlos032@mail.com", "987456300", "987654147", TipoDocumentoEnum.PASAPORTE),
 					//new DatosUsuario("Litzy Shannen", "Cervantes Galvan", "lizty@gmail.com", "917456300", "987654142", TipoDocumentoEnum.DNI),
-					new DatosUsuario("Geraldin", "Porraz Milagroso", "geraldin@gmail.com", "932547851", "987654177", TipoDocumentoEnum. CARNET_EXTRANJERIA)
+					new DatosUsuario("Geraldin", "Porraz Milagroso", "italocarlos032@gmail.com", "932547851", "987654177", TipoDocumentoEnum. CARNET_EXTRANJERIA)
 
 			);
 
@@ -78,7 +78,7 @@ public class CircuitoManejoApplication {
 			}
 
 			// 3. Guardar todos los usuarios a la vez
-		usuarioRepository.saveAll(usuarios);
+	//usuarioRepository.saveAll(usuarios);
 
 //			System.out.println("✅ Se cargaron " + usuarios.size() + " usuarios iniciales.");
 
@@ -124,7 +124,7 @@ public class CircuitoManejoApplication {
 					.precioTotal(BigDecimal.valueOf(500.00))
 					.activo(true)
 					.build();
-			paqueteRepository.saveAll(List.of(paquete,paquete2));
+	//	paqueteRepository.saveAll(List.of(paquete,paquete2));
 
 			Vehiculo vehiculo1=Vehiculo.builder()
 					.placa("ABC-456")
@@ -171,7 +171,7 @@ public class CircuitoManejoApplication {
 					.activo(true)
 					.build();
 
-			vehiculoRepository.saveAll(List.of(vehiculo1,vehiculo2,vehiculo3,vehiculo4,vehiculo5));
+			//vehiculoRepository.saveAll(List.of(vehiculo1,vehiculo2,vehiculo3,vehiculo4,vehiculo5));
 		};
 
 	}

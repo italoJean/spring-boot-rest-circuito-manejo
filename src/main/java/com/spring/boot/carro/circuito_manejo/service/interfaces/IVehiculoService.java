@@ -4,7 +4,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoD
 
 import java.util.List;
 
-public interface VehiculoService {
+public interface IVehiculoService {
 
     public List<VehiculoDTO> listar();
 

@@ -9,11 +9,10 @@ import com.spring.boot.carro.circuito_manejo.persistence.enums.TipoEventoReserva
 import com.spring.boot.carro.circuito_manejo.persistence.repository.EventoReservaRepository;
 import com.spring.boot.carro.circuito_manejo.persistence.repository.ReservaRepository;
 import com.spring.boot.carro.circuito_manejo.persistence.repository.VehiculoRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +20,15 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class ReservaFinJob implements Job {
 
-    private final ReservaRepository reservaRepository;
-    private final EventoReservaRepository eventoReservaRepository;
-    private final VehiculoRepository vehiculoRepository;
+    @Autowired
+    private  ReservaRepository reservaRepository;
+    @Autowired
+    private  EventoReservaRepository eventoReservaRepository;
+    @Autowired
+    private  VehiculoRepository vehiculoRepository;
 
     @Override
     @Transactional
@@ -36,8 +37,8 @@ public class ReservaFinJob implements Job {
         // 1. OBTENER DATOS
         Long reservaId = context.getMergedJobDataMap().getLong("reservaId");
 
-        // 2. BUSCAR ENTIDAD
-        Reserva reserva = reservaRepository.findById(reservaId)
+        // 2. BUSCAR ENTIDAD  Reserva reserva = reservaRepository.findById(reservaId)
+        Reserva reserva = reservaRepository.findByIdCompleto(reservaId)
                 .orElseThrow();
 
         // 3. LÓGICA DE TRANSICIÓN (VALIDACIÓN)
@@ -64,7 +65,7 @@ public class ReservaFinJob implements Job {
                 .minutosUsados((int) minutosUsados)
                 .minutosDevueltos(0)
                 .minutosAfectados(0)
-                .detalle("Reserva finalizada por Quartz")// Reserva finalizada automáticamente por el sistema.
+                .detalle("Reserva finalizada")// Reserva finalizada automáticamente por el sistema.
                 .tipo(TipoEventoReservaEnum.FINALIZADO)
                 .fechaRegistro(LocalDateTime.now())
                 .build();

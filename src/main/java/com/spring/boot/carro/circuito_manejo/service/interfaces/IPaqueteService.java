@@ -4,7 +4,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.paquete.PaqueteDTO
 
 import java.util.List;
 
-public interface PaqueteService {
+public interface IPaqueteService {
 
     public List<PaqueteDTO> listar();
 

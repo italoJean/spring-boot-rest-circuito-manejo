@@ -10,9 +10,12 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.ReservaRes
 
 import java.util.List;
 
-public interface ReservaService {
-    public ReservaResponseDTO registrarIncidencia(Long reservaId, IncidenciaRequestDTO incidenciaRequestDTO) ;
+public interface IReservaService {
+
+    public ReservaResponseDTO registrarIncidencia(Long reservaId, IncidenciaRequestDTO incidenciaRequestDTO);
+
     public ReservaResponseDTO reprogramarReserva(Long reservaId, ReprogramacionRequestDTO dto);
+
     public void cancelarReserva(Long reservaId);
 
     public PagoMinutosDTO detalleMinutos(Long pagoId);
@@ -20,10 +23,14 @@ public interface ReservaService {
     public DetalleReservaResponseDTO detalleReserva(Long id);
 
     public ReservaResponseDTO crearReserva(ReservaRequestDTO request);
-    public List<ReservaResponseDTO> listar() ;
-    public List<HorarioOcupadoDTO> listarCalendario() ;
 
-    public List<HorarioOcupadoDTO> listarHorariosOcupados(Long vehiculoId) ;
+    public List<ReservaResponseDTO> listar();
 
-    public List<HorarioOcupadoDTO> obtenerHorariosCliente(Long clienteId); ;
+    public List<HorarioOcupadoDTO> listarCalendario();
+
+    public List<HorarioOcupadoDTO> listarHorariosOcupados(Long vehiculoId);
+
+    public List<HorarioOcupadoDTO> obtenerHorariosCliente(Long clienteId);
+
+    public List<HorarioOcupadoDTO> obtenerHorarios(Long vehiculoId, Long pagoId);
 }

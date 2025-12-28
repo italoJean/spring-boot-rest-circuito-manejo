@@ -6,7 +6,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.usuario.UsuarioReq
 import com.spring.boot.carro.circuito_manejo.presentation.dto.usuario.UsuarioResponseDTO;
 import com.spring.boot.carro.circuito_manejo.service.exception.BusinessException;
 import com.spring.boot.carro.circuito_manejo.service.exception.NotFoundException;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.UsuarioService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IUsuarioService;
 import com.spring.boot.carro.circuito_manejo.util.mapper.UsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class UsuarioServiceImpl implements UsuarioService {
+public class UsuarioService implements IUsuarioService {
 
     @Autowired
     private UsuarioMapper usuarioMapper;
@@ -48,12 +48,6 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .ifPresent(u -> {
                     throw new BusinessException("Ya existe un usuario con el número de documento: "
                             + usuarioRequestDTO.getNumeroDocumento());
-                });
-
-        usuarioRepository.findByEmail(usuarioRequestDTO.getEmail())
-                .ifPresent(u -> {
-                    throw new BusinessException("Ya existe un usuario con el correo: "
-                            + usuarioRequestDTO.getEmail());
                 });
 
         Usuario entity = usuarioMapper.toEntity(usuarioRequestDTO);

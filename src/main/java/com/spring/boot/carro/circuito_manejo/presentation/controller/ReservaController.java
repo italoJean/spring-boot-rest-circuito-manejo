@@ -7,8 +7,7 @@ import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.evento.Pag
 import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.evento.ReprogramacionRequestDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.ReservaRequestDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.ReservaResponseDTO;
-import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoDTO;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.ReservaService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IReservaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +15,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "*")
+
 @RestController
 @RequestMapping("/api/v1/reservas")
 public class ReservaController {
 
     @Autowired
-    private ReservaService reservaService;
+    private IReservaService reservaService;
 
     @PostMapping
     public ResponseEntity<ReservaResponseDTO> crearReserva(@Valid @RequestBody ReservaRequestDTO reservaRequest) {
+
         ReservaResponseDTO reservaCreada = reservaService.crearReserva(reservaRequest);
         return ResponseEntity.ok(reservaCreada);
     }
@@ -66,5 +66,12 @@ public class ReservaController {
     @GetMapping("/{pagoId}/minutos")
     public ResponseEntity<PagoMinutosDTO> obtenerMinutos(@PathVariable Long pagoId) {
         return ResponseEntity.ok(reservaService.detalleMinutos(pagoId));
+    }
+
+    @GetMapping("/horarios")
+    public ResponseEntity<List<HorarioOcupadoDTO>> listar(
+            @RequestParam Long vehiculoId,
+            @RequestParam Long pagoId) {
+        return ResponseEntity.ok(reservaService.obtenerHorarios(vehiculoId, pagoId));
     }
 }

@@ -14,7 +14,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 @Service
-public class EmailServiceImpl implements IEmailService {
+public class EmailService implements IEmailService {
 
     @Value("${email.sender}")
     private String emailUser;

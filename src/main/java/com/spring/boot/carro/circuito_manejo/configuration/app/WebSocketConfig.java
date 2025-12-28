@@ -1,4 +1,4 @@
-package com.spring.boot.carro.circuito_manejo.util.websocket;
+package com.spring.boot.carro.circuito_manejo.configuration.app;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -20,6 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
+//                .setAllowedOrigins("http://localhost:4200") // URL de tu Angular
                 .withSockJS();
     }
 }

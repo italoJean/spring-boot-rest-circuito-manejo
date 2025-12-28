@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "clientes", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"email"}, name = "uk_email"),
+//        @UniqueConstraint(columnNames = {"email"}, name = "uk_email"),
         @UniqueConstraint(columnNames = {"tipo_documento", "numero_documento"}, name = "uk_documento"),
 })
 @Getter

@@ -1,9 +1,9 @@
 package com.spring.boot.carro.circuito_manejo.persistence.repository;
 
 import com.spring.boot.carro.circuito_manejo.persistence.entity.Reserva;
-import com.spring.boot.carro.circuito_manejo.persistence.entity.Usuario;
 import com.spring.boot.carro.circuito_manejo.persistence.enums.EstadoReservaEnum;
 import com.spring.boot.carro.circuito_manejo.persistence.projection.HorarioOcupadoProjection;
+import com.spring.boot.carro.circuito_manejo.presentation.dto.reporte.UsoVehiculoDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,13 +11,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
-
-    List<Reserva> findByEstadoAndFechaReservaBefore(EstadoReservaEnum estado, LocalDateTime fecha);
-
-    List<Reserva> findByEstadoAndFechaFinBefore(EstadoReservaEnum estado, LocalDateTime fecha);
 
     List<Reserva> findByPagoId(Long pagoId);
 
@@ -70,10 +67,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     List<Reserva> findByActivoTrue();
 
-    //para reprogramar el scheduded
-//    @Query("SELECT COUNT(r) FROM Reserva r WHERE r.vehiculo.id = :vehiculoId AND r.id <> :reservaId AND r.activo = true AND r.fechaReserva < :fin AND r.fechaFin > :inicio")
-//    long countCrucesVehiculoReserva(Long reservaId, Long vehiculoId, LocalDateTime inicio, LocalDateTime fin);
-
     long countReservasByPagoId(Long pagoId);
 
     // Ejemplo de consulta JPQL (o lógica de Criteria API)
@@ -91,16 +84,33 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
             @Param("fin") LocalDateTime fin
     );
 
-    @Query("SELECT r.id AS idReserva, r.fechaReserva AS inicio, r.fechaFin AS fin, r.pago.id AS idPago, r.vehiculo.id AS idVehiculo, r.estado AS estado, r.pago.usuario.nombre AS nombre, r.pago.usuario.apellido AS apellido, r.vehiculo.placa AS placa, r.minutosReservados AS minutosReservados  FROM Reserva r WHERE r.vehiculo.id = :vehiculoId AND r.activo = true AND r.estado <> 'CANCELADO' ")
+    @Query("SELECT r.id AS idReserva, r.fechaReserva AS inicio, r.fechaFin AS fin, r.pago.id AS idPago, r.vehiculo.id AS idVehiculo, r.estado AS estado, r.pago.usuario.nombre AS nombre, r.pago.usuario.apellido AS apellido, r.vehiculo.placa AS placaVehiculo, r.minutosReservados AS minutosReservados  FROM Reserva r WHERE r.vehiculo.id = :vehiculoId AND r.activo = true AND r.estado <> 'CANCELADO' ")
     List<HorarioOcupadoProjection> findHorariosOcupadosByVehiculo(Long vehiculoId);
-/*
-    @Query("SELECT r.id AS reservaId, r.fechaInicio AS inicio, r.fechaFin AS fin FROM Reserva r WHERE r.vehiculo.id = :vehiculoId AND r.activo = true AND r.estado IN ('RESERVADO', 'EN_PROGRESO') ")
-   List<HorarioOcupadoProjection> findHorariosOcupadosPorVehiculo(Long vehiculoId);
-*/
 
-//    @Query("SELECT r.id AS idReserva, r.fechaReserva AS inicio, r.fechaFin AS fin FROM Reserva r WHERE r.pago.id = :clienteId AND r.activo = true AND r.estado IN ('RESERVADO','EN_PROGRESO')")
-@Query("SELECT r.id AS idReserva, r.fechaReserva AS inicio, r.fechaFin AS fin, r.vehiculo.id AS idVehiculo, r.pago.id AS idPago, r.estado AS estado, r.pago.usuario.nombre AS nombre, r.pago.usuario.apellido AS apellido, r.vehiculo.placa AS placaVehiculo, r.minutosReservados AS minutosReservados FROM Reserva r WHERE r.pago.id = :pagoId AND r.activo = true AND r.estado IN ('RESERVADO','EN_PROGRESO')")
-List<HorarioOcupadoProjection> findHorariosOcupadosPorCliente(Long pagoId);
+    @Query("SELECT r.id AS idReserva, " +
+            "r.fechaReserva AS inicio, " +
+            "r.fechaFin AS fin, " +
+            "r.pago.id AS idPago, " +
+            "r.vehiculo.id AS idVehiculo, " +
+            "r.estado AS estado, " +
+            "r.pago.usuario.nombre AS nombre, " +
+            "r.pago.usuario.apellido AS apellido, " +
+            "r.vehiculo.placa AS placaVehiculo, " +
+            "r.minutosReservados AS minutosReservados " +
+            "FROM Reserva r " +
+            "WHERE r.activo = true " +
+            "AND r.estado IN (RESERVADO, EN_PROGRESO) " +
+            "AND (" +
+            "     (:vehiculoId IS NOT NULL AND r.vehiculo.id = :vehiculoId) " +
+            "     OR (:pagoId IS NOT NULL AND r.pago.id = :pagoId)" +
+            ")")
+    List<HorarioOcupadoProjection> findHorariosOcupados(
+            @Param("vehiculoId") Long vehiculoId,
+            @Param("pagoId") Long pagoId
+    );
+
+    @Query("SELECT r.id AS idReserva, r.fechaReserva AS inicio, r.fechaFin AS fin, r.vehiculo.id AS idVehiculo, r.pago.id AS idPago, r.estado AS estado, r.pago.usuario.nombre AS nombre, r.pago.usuario.apellido AS apellido, r.vehiculo.placa AS placaVehiculo, r.minutosReservados AS minutosReservados FROM Reserva r WHERE r.pago.id = :pagoId AND r.activo = true AND r.estado IN ('RESERVADO','EN_PROGRESO')")
+    List<HorarioOcupadoProjection> findHorariosOcupadosPorCliente(Long pagoId);
 
 
     @Query("SELECT COUNT(r) > 0 FROM Reserva r " +
@@ -109,4 +119,24 @@ List<HorarioOcupadoProjection> findHorariosOcupadosPorCliente(Long pagoId);
             "AND r.activo = true " +
             "AND r.estado IN ('RESERVADO', 'EN_PROGRESO')")
     boolean existsOtrasReservasActivas(@Param("vehiculoId") Long vehiculoId, @Param("reservaActualId") Long reservaActualId);
+
+
+    @Query("SELECT r FROM Reserva r " +
+            "JOIN FETCH r.pago p " +
+            "JOIN FETCH p.usuario u " +
+            "JOIN FETCH r.vehiculo v " +
+            "WHERE r.id = :id")
+    Optional<Reserva> findByIdCompleto(@Param("id") Long id);
+
+    //GRAFOS
+    @Query("SELECT " +
+            "v.placa, " +
+            "COUNT(r), " +
+            "CAST(SUM(r.minutosReservados) AS long) " +
+            "FROM Reserva r JOIN r.vehiculo v " +
+            "WHERE MONTH(r.fechaReserva) = :mes " +
+            "AND YEAR(r.fechaReserva) = :anio " +
+            "AND r.estado IN ('FINALIZADO', 'INCIDENCIA') " + // <-- Filtro de estados añadido
+            "GROUP BY v.placa")
+    List<UsoVehiculoDTO> obtenerUsoVehiculosMesActual(@Param("mes") int mes, @Param("anio") int anio);
 }

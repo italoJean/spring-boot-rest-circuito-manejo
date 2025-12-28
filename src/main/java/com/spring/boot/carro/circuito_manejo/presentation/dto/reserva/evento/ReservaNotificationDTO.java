@@ -1,4 +1,4 @@
-package com.spring.boot.carro.circuito_manejo.presentation.dto;
+package com.spring.boot.carro.circuito_manejo.presentation.dto.reserva.evento;
 
 import java.time.LocalDateTime;
 

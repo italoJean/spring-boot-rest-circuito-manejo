@@ -1,8 +1,6 @@
 package com.spring.boot.carro.circuito_manejo.util.mapper;
 
-import com.spring.boot.carro.circuito_manejo.persistence.entity.Usuario;
 import com.spring.boot.carro.circuito_manejo.persistence.entity.Vehiculo;
-import com.spring.boot.carro.circuito_manejo.presentation.dto.usuario.UsuarioResumenDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoDTO;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.vehiculo.VehiculoResumenDTO;
 import org.mapstruct.Mapper;

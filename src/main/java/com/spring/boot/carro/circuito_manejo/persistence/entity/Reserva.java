@@ -2,7 +2,6 @@ package com.spring.boot.carro.circuito_manejo.persistence.entity;
 
 import com.spring.boot.carro.circuito_manejo.persistence.enums.EstadoReservaEnum;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -55,4 +54,6 @@ public class Reserva {
     @Column(nullable = false)
     private boolean activo;
 
+    @Column(name = "email_creador", length = 150)
+    private String emailCreador;
 }

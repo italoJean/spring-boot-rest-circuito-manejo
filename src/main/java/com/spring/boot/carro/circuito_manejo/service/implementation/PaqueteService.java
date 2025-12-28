@@ -4,7 +4,7 @@ import com.spring.boot.carro.circuito_manejo.persistence.entity.Paquete;
 import com.spring.boot.carro.circuito_manejo.persistence.repository.PaqueteRepository;
 import com.spring.boot.carro.circuito_manejo.presentation.dto.paquete.PaqueteDTO;
 import com.spring.boot.carro.circuito_manejo.service.exception.NotFoundException;
-import com.spring.boot.carro.circuito_manejo.service.interfaces.PaqueteService;
+import com.spring.boot.carro.circuito_manejo.service.interfaces.IPaqueteService;
 import com.spring.boot.carro.circuito_manejo.util.mapper.PaqueteMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class PaqueteServiceImpl implements PaqueteService {
+public class PaqueteService implements IPaqueteService {
 
     private final String NOT_FOUND_MSG = "Paquete no encontrado con el id: ";
 

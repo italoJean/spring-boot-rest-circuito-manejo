@@ -13,9 +13,6 @@ public interface PaqueteRepository extends JpaRepository<Paquete, Long> {
 
     List<Paquete> findByActivoTrue();
 
-    boolean existsByNombre(String nombre);
-
-
     @Query("SELECT COUNT(p) > 0 FROM Pago p WHERE p.paquete.id = :paqueteId")
     boolean existsByPaqueteIdInPagos(@Param("paqueteId") Long paqueteId);
 }
