@@ -28,7 +28,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(request -> {
-                    request.requestMatchers("/login", "/oauth2/**").permitAll();
+                    request.requestMatchers(
+                            "/login",
+                            "/oauth2/**",
+                            "/swagger-ui.html",
+                            "/swagger-ui/**",
+                            "/v3/api-docs/**"
+                    ).permitAll();
                     request.anyRequest().authenticated();
                 })
                 .exceptionHandling(exception -> exception
@@ -40,8 +46,8 @@ public class SecurityConfig {
                 //.formLogin(Customizer.withDefaults())
                 .oauth2Login(oauth2 -> oauth2
                         // Aquí podrías redirigir a una URL de Angular después del éxito
-                      //  .defaultSuccessUrl("http://localhost:4200/dashboard", true)
-                        .defaultSuccessUrl("https://angular-circuito-manejo.onrender.com/dashboard", true)
+                        .defaultSuccessUrl("http://localhost:4200/dashboard", true)
+                      //  .defaultSuccessUrl("https://angular-circuito-manejo.onrender.com/dashboard", true)
                 )
 
                 .logout(logout -> logout
